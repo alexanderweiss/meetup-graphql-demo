@@ -1,14 +1,13 @@
 import { get, truncate } from "lodash";
 import { pubsub } from "../schema";
-import DataService from "../../data/index";
 import TwitterService from "../../twitter";
 import {
-  Person,
   PersonInput,
   PersonSearchArgs,
   PersonBioArgs,
   Pagination
 } from "../../../types";
+import Person, { IPerson } from "../../database/models/person";
 
 const PERSON_ADDED = "PERSON_ADDED";
 
@@ -24,24 +23,17 @@ export default {
       args: PersonSearchArgs,
       ___: unknown,
       ____: unknown
-    ) => {
-      const service = new DataService();
-
-      return service
-        .getPersons()
-        .find(
-          ({ name }) => ~name.toLowerCase().indexOf(args.name.toLowerCase())
-        );
-    },
+    ) => Person.findOne({ name: { $regex: args.name, $options: "i" } }),
     persons: async (
       _: unknown,
-      args: Pagination,
+      { limit = 25, offset = 0 }: Pagination = {},
       ___: unknown,
       ____: unknown
-    ) => {
-      const service = new DataService();
-      return service.getPersons(args);
-    }
+    ) =>
+      Person.find(null, null, {
+        limit: limit,
+        skip: Math.max(0, offset)
+      })
   },
   Mutation: {
     addPerson: async (
@@ -50,14 +42,13 @@ export default {
       __: unknown,
       ___: unknown
     ) => {
-      const service = new DataService();
-      const person = service.addPerson(args.input);
+      const person = Person.create(args.input);
       pubsub.publish(PERSON_ADDED, { personAdded: person });
       return person;
     }
   },
   Person: {
-    country: async (obj: Person, _: any, __: unknown, ___: unknown) => {
+    country: async (obj: IPerson, _: any, __: unknown, ___: unknown) => {
       return obj.localizedCountryName;
     },
     facebook: async (obj: any, _: unknown, __: unknown, ___: unknown) => {
@@ -73,7 +64,7 @@ export default {
       return service.getUser(identifier);
     },
     bio: async (
-      obj: Person,
+      obj: IPerson,
       args: PersonBioArgs,
       __: unknown,
       ___: unknown

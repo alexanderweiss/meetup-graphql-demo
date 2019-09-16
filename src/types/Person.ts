@@ -1,27 +1,5 @@
-import { Twitter } from "./";
-
-type ServiceEntry = {
-  identifier: string;
-};
-
-export type Photo = {
-  highres_link: string;
-  photo_link: string;
-  thumb_link: string;
-};
-
-export type Person = {
-  id?: number;
-  name: string;
-  bio: string;
-  status?: string;
-  country?: string;
-  city?: string;
-  photo?: Photo;
-  localizedCountryName?: string;
-  twitter?: Twitter;
-  facebook?: ServiceEntry;
-};
+export { IPerson as Person } from "../services/database/models/person";
+export { IPhoto as Photo } from "../services/database/models/photo";
 
 export type PersonInput = {
   input: {
