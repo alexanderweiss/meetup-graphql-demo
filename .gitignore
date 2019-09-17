@@ -5,3 +5,6 @@ __LOCAL
 build
 node_modules
 yarn-error.log
+
+.terraform
+*.tfstate*
